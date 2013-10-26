@@ -202,6 +202,7 @@ void MainWindow::setupTableModel()
     m_tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     ui->tableView->setModel(m_tableModel);
     connect(m_tableModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(tableUpdated()));
+    connect(m_tableModel, SIGNAL(roundingPrecisionChanged(int)), ui->tableView, SLOT(update()));
 }
 
 MainWindow::~MainWindow()
@@ -290,6 +291,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
             QAction *resizeColumns = popup.addAction(tr("Resize columns"));
             resizeColumns->setData(CHANGE_SIZE_COLUMN);
             connect(resizeColumns, SIGNAL(triggered()), SLOT(onChangeColumnOrRowSize()));
+            popup.addSeparator();
+            QAction *setRoundingPrecision = popup.addAction(tr("Set rounding precision"));
+            setRoundingPrecision->setData(logical_index);
+            connect(setRoundingPrecision, SIGNAL(triggered()), SLOT(onSetRoundingPrecision()));
+            QAction *resetRoundingPrecision = popup.addAction(tr("Reset rounding precision"));
+            resetRoundingPrecision->setEnabled(m_tableModel->roundingPrecision(logical_index) >= 0);
+            resetRoundingPrecision->setData(logical_index);
+            connect(resetRoundingPrecision, SIGNAL(triggered()), SLOT(onResetRoundingPrecision()));
             popup.exec();
         }
         return true;
@@ -355,6 +364,30 @@ void MainWindow::onChangeColumnOrRowSize()
             ui->tableView->setColumnWidth(i, resultSize);
         }
     }
+}
+
+void MainWindow::onSetRoundingPrecision()
+{
+    QAction *action = static_cast<QAction *>(sender());
+    int logicalIndex = action->data().toInt();
+
+    int currentPrecision = m_tableModel->roundingPrecision(logicalIndex);
+    QString msg = QString::number(currentPrecision >= 0 ? currentPrecision : 3);
+
+    QIntValidator intValidator;
+    intValidator.setRange(0, 24);
+    QString result = SheetTextInputDialog::textInput(tr("Set rounding precision"), "", this, msg, false, &intValidator);
+    if (result.isEmpty()) return;
+
+    m_tableModel->setRoundingPrecision(logicalIndex, result.toInt());
+}
+
+void MainWindow::onResetRoundingPrecision()
+{
+    QAction *action = static_cast<QAction *>(sender());
+    int logicalIndex = action->data().toInt();
+
+    m_tableModel->setRoundingPrecision(logicalIndex, -1);
 }
 
 void MainWindow::onWindowMenuShow()

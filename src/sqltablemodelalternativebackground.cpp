@@ -3,6 +3,11 @@
 #include <QColor>
 #include "main.h"
 
+static inline bool isNumeric(const QVariant &value)
+{
+    return value.type() == QVariant::Int || value.type() == QVariant::Double;
+}
+
 SqlTableModelAlternativeBackground::SqlTableModelAlternativeBackground(QObject *parent, QSqlDatabase db) :
     QSqlTableModel(parent, db), m_editable(true), m_view(false)
 {
@@ -23,13 +28,17 @@ QVariant SqlTableModelAlternativeBackground::data(const QModelIndex & index, int
         break;
     case Qt::DisplayRole: {
         QVariant d = QSqlTableModel::data(index, role);
-        if (d.type() == QVariant::String)
+        if (d.type() == QVariant::String) {
             return d.toString().split("\n").at(0);
+        } else if (m_roundingPrecisionMap.contains(index.column()) && isNumeric(d)) {
+            return QString::number(d.toDouble(), 'f', m_roundingPrecisionMap[index.column()]);
+        }
+
         return d;
     }
     case Qt::TextAlignmentRole: {
         QVariant d = QSqlTableModel::data(index, Qt::DisplayRole);
-        if (d.type() == QVariant::Int || d.type() == QVariant::Double)
+        if (isNumeric(d))
             return (int)(Qt::AlignRight | Qt::AlignVCenter);
 
         return QSqlTableModel::data(index, role);
@@ -84,4 +93,22 @@ long long SqlTableModelAlternativeBackground::sqlRowCount()
 
     count.next();
     return count.value(0).toLongLong();
+}
+
+int SqlTableModelAlternativeBackground::roundingPrecision(int column) const
+{
+    return m_roundingPrecisionMap.contains(column) ? m_roundingPrecisionMap[column] : -1;
+}
+
+void SqlTableModelAlternativeBackground::setRoundingPrecision(int column, int precision)
+{
+    if (column < 0 || columnCount() <= column) return;
+
+    if (precision >= 0) {
+        m_roundingPrecisionMap[column] = precision;
+        emit roundingPrecisionChanged(column);
+    } else {
+        m_roundingPrecisionMap.remove(column);
+        emit roundingPrecisionChanged(column);
+    }
 }

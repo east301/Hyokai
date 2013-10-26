@@ -64,6 +64,8 @@ public slots:
 
 private slots:
     void onChangeColumnOrRowSize();
+    void onSetRoundingPrecision();
+    void onResetRoundingPrecision();
     void filterFinished();
     void filterChainging();
     void tableChanged(const QString &name);

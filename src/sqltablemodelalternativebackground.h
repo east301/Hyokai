@@ -2,6 +2,7 @@
 #define SQLTABLEMODELALTERNATIVEBACKGROUND_H
 
 #include <QSqlTableModel>
+#include <QMap>
 
 class SqlTableModelAlternativeBackground : public QSqlTableModel
 {
@@ -19,12 +20,17 @@ public:
     bool isView() { return m_view; }
     long long sqlRowCount();
 
+    int roundingPrecision(int column) const;
+    void setRoundingPrecision(int column, int precision);
+
 private:
     bool m_editable;
     bool m_view;
+    QMap<int, int> m_roundingPrecisionMap;
 
 signals:
-    
+    void roundingPrecisionChanged(int column);
+
 public slots:
     void setEditable(bool editable) {m_editable = editable;}
 };
