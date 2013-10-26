@@ -293,6 +293,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
             connect(resizeColumns, SIGNAL(triggered()), SLOT(onChangeColumnOrRowSize()));
             popup.addSeparator();
             QAction *setRoundingPrecision = popup.addAction(tr("Set rounding precision"));
+            setRoundingPrecision->setEnabled(m_tableModel->isNumericColumn(logical_index));
             setRoundingPrecision->setData(logical_index);
             connect(setRoundingPrecision, SIGNAL(triggered()), SLOT(onSetRoundingPrecision()));
             QAction *resetRoundingPrecision = popup.addAction(tr("Reset rounding precision"));

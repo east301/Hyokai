@@ -95,6 +95,12 @@ long long SqlTableModelAlternativeBackground::sqlRowCount()
     return count.value(0).toLongLong();
 }
 
+bool SqlTableModelAlternativeBackground::isNumericColumn(int column) const
+{
+    QVariant d = SqlTableModelAlternativeBackground::data(createIndex(0, column), Qt::DisplayRole);
+    return isNumeric(d);
+}
+
 int SqlTableModelAlternativeBackground::roundingPrecision(int column) const
 {
     return m_roundingPrecisionMap.contains(column) ? m_roundingPrecisionMap[column] : -1;

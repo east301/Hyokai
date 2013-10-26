@@ -20,6 +20,7 @@ public:
     bool isView() { return m_view; }
     long long sqlRowCount();
 
+    bool isNumericColumn(int column) const;
     int roundingPrecision(int column) const;
     void setRoundingPrecision(int column, int precision);
 
