@@ -27,6 +27,13 @@ QVariant SqlTableModelAlternativeBackground::data(const QModelIndex & index, int
             return d.toString().split("\n").at(0);
         return d;
     }
+    case Qt::TextAlignmentRole: {
+        QVariant d = QSqlTableModel::data(index, Qt::DisplayRole);
+        if (d.type() == QVariant::Int || d.type() == QVariant::Double)
+            return (int)(Qt::AlignRight | Qt::AlignVCenter);
+
+        return QSqlTableModel::data(index, role);
+    }
     }
 
     return QSqlTableModel::data(index, role);
